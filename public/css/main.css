@@ -76,7 +76,7 @@ a .fa {
 
 .page-enter.page-enter-active {
   transform: translate(0%);
-  transition: transform 1000ms ease-in-out;
+  transition: transform 500ms ease-in-out;
 }
 
 .page-leave {
@@ -85,7 +85,7 @@ a .fa {
 
 .page-leave.page-leave-active {
   transform: translate(-150%, 0); 
-  transition: transform 1000ms ease-in-out; 
+  transition: transform 500ms ease-in-out; 
 }
 
 
@@ -95,7 +95,7 @@ a .fa {
 
 .prev-enter.prev-enter-active {
   transform: translate(0%);
-  transition: transform 1000ms ease-in-out;
+  transition: transform 500ms ease-in-out;
 }
 
 .prev-leave {
@@ -104,7 +104,7 @@ a .fa {
 
 .prev-leave.prev-leave-active {
   transform: translate(150%, 0); 
-  transition: transform 1000ms ease-in-out; 
+  transition: transform 500ms ease-in-out; 
 }
 
 

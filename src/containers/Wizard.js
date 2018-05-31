@@ -42,6 +42,10 @@ class Wizard extends Component {
     this.forceUpdate();
   }
 
+  createContract = () => {
+    console.log("create contract");
+  }
+
   /* for changing pages in the form */
   nextPage = (pageId) => {
     const s = this.state
@@ -59,8 +63,8 @@ class Wizard extends Component {
     return (
       <ReactCSSTransitionGroup
         transitionName={ this.state.pageForward ? "page" : "prev" }
-        transitionEnterTimeout={1000}
-        transitionLeaveTimeout={1000}
+        transitionEnterTimeout={500}
+        transitionLeaveTimeout={500}
       >
       {this.renderPage()}
       </ReactCSSTransitionGroup>

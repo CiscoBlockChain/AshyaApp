@@ -10,11 +10,12 @@ const Wizard4 = ({prevClick, handleChange, createContract,
         <p>Device name: {contractName} </p>
         <p>Device Location: {contractLocation} </p>
         <p>Device URL: {contractURL} </p>
+        <button className="btn btn-secondary btn-lg float-left" onClick={prevClick}>
+          No, Go Back
+        </button>
+        &nbsp;
         <button className="btn btn-primary btn-lg" onClick={createContract}>
           Yes, create the contract
-        </button>
-        <button className="btn btn-primary btn-lg float-left" onClick={prevClick}> 
-          No, Go Back
         </button>
       </div>
     </div>

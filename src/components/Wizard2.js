@@ -11,10 +11,11 @@ const Wizard2 = ({nextClick, prevClick, handleChange, contractLocation}) => (
             <input type="text" onChange={handleChange} className="form-control" id="contractLocation" value={contractLocation} />
           </div>
         </form> 
-        <button className="btn btn-primary btn-lg float-left" onClick={prevClick}> 
+        <button className="btn btn-secondary btn-lg" onClick={prevClick}> 
           Back
         </button>
-        <button className="btn btn-primary btn-lg float-left" onClick={nextClick}> 
+        &nbsp;
+        <button className="btn btn-primary btn-lg" onClick={nextClick}> 
           Next
         </button>
       </div>
