@@ -5,7 +5,7 @@ import * as contract from '../contract'
 //import blockchainAPI from '../services/blockchain'
 
 
-export function* createDevice(action) {
+export function* createDev(action) {
   //var w3 = new Web3(new Web3.providers.HttpProvider('https://kovan.infura.io/1r0bIX2eewb5e9m2WAug'));
   var w3 = new Web3(new Web3.providers.HttpProvider('http://localhost:9545'));
   if(!w3.isConnected()) {
@@ -41,7 +41,7 @@ export function* createDevice(action) {
 } 
 
 export function* watchBlockchainRequest() {
-  yield takeEvery(actions.CREATE_DEVICE, createDevice)
+  yield takeEvery(actions.CREATE_DEVICE, createDev)
 }
 
 export default function* rootSaga() {

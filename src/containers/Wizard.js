@@ -45,7 +45,7 @@ class Wizard extends Component {
 
   createContract = () => {
     const s = this.state
-    this.props.createDevice(s.ContractName, s.ContractLocation, s.contractURL)
+    this.props.createDevice(s.contractName, s.contractLocation, s.contractURL)
   }
 
   /* for changing pages in the form */
