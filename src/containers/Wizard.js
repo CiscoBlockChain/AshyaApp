@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group'
 import { connect } from 'react-redux'
+import { createDevice } from '../actions'
 import Welcome from '../components/Welcome'
 import Wizard1 from '../components/Wizard1'
 import Wizard2 from '../components/Wizard2'
@@ -11,9 +12,9 @@ class Wizard extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      contractName: "myRaspberryPi",
-      contractLocation: "Berlin, Germany",
-      contractURL: "https://example.com",
+      contractName: this.props.contractName || "myRaspberryPi",
+      contractLocation: this.props.contractLocation || "Berlin, Germany",
+      contractURL: this.props.contractURL || "https://example.com",
       pageForward: true,
       currentPage: 1
     }
@@ -43,7 +44,8 @@ class Wizard extends Component {
   }
 
   createContract = () => {
-    console.log("create contract");
+    const s = this.state
+    this.props.createDevice(s.ContractName, s.ContractLocation, s.contractURL)
   }
 
   /* for changing pages in the form */
@@ -110,9 +112,13 @@ class Wizard extends Component {
 }
 
 const mapStateToProps = (state, ownProps) => ({
+  contractName: state.blockchain.name,
+  contractLocation: state.blockchain.location,
+  contractURL: state.blockchain.url
 })
 
 const mapDispatchToProps = (dispatch) => ({
+  createDevice: (name, loc, url) => dispatch(createDevice(name, loc, url)),
 })
 
 

@@ -1,16 +1,20 @@
 import {
-  GOT_ADDRESSES,
+  CREATE_DEVICE,
   BLOCKCHAIN_ERROR
 } from '../actions'
 
 const blockchain = (state = {
-  addresses: [],
   error: "",
+  name: "", 
+  location: "", 
+  url: ""
   }, action) => {
   switch (action.type) {
-    case GOT_ADDRESSES:
+    case CREATE_DEVICE:
       return Object.assign({}, state, {
-        addresses: action.addresses
+        name: action.name,
+        location: action.location,
+        url: action.url
       })
     case BLOCKCHAIN_ERROR: 
       return Object.assign({}, state, {

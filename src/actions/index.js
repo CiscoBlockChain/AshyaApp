@@ -1,14 +1,11 @@
-export const GOT_ADDRESSES = 'GOT ADDRESSES'
-export const GET_ADDRESSES = 'GETTING ADDRESSES'
+export const CREATE_DEVICE = 'CREATE_DEVICE'
 export const BLOCKCHAIN_ERROR = 'BLOCKCHAIN ERROR'
 
-export const gotAddresses = (addresses) => ({
-  type: GOT_ADDRESSES, 
-  addresses
-})
-
-export const getAddresses = () => ({
-  type: GET_ADDRESSES,
+export const createDevice = (n, l, u) => ({
+  type: CREATE_DEVICE,
+  name: n,
+  location: l,
+  url: u
 })
 
 export const gotError = (error) => ({
