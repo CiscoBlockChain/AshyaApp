@@ -1,24 +1,46 @@
 import {
   CREATE_DEVICE,
-  BLOCKCHAIN_ERROR
+  BLOCKCHAIN_ERROR,
+  UPDATE_CONTRACT,
+  GOT_CONTRACT,
+  GET_CONTRACT
 } from '../actions'
 
 const blockchain = (state = {
   error: "",
   name: "", 
   location: "", 
-  url: ""
+  url: "",
+  fetching: false,
+  contract: ""
   }, action) => {
   switch (action.type) {
+    case UPDATE_CONTRACT:
+      return Object.assign({}, state, {
+        contract: action.contract,
+        fetching: true
+      })
+    case GET_CONTRACT: 
+      return Object.assign({}, state, {
+        fetching: true
+      })
+    case GOT_CONTRACT:
+      console.log("got contract....")
+      return Object.assign({}, state, {
+        fetching: false,
+        contract: action.contract
+      })
     case CREATE_DEVICE:
       return Object.assign({}, state, {
         name: action.name,
         location: action.location,
-        url: action.url
+        url: action.url,
+        featching: true
       })
     case BLOCKCHAIN_ERROR: 
       return Object.assign({}, state, {
-        error: action.error
+        error: action.error,
+        fetching: false
       })
     default:
       return state

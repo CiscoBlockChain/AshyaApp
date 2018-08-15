@@ -1,8 +1,8 @@
-import {put, all, takeEvery } from 'redux-saga/effects'
+import {put, all, call, takeEvery } from 'redux-saga/effects'
 import Web3 from 'web3'
 import * as actions from '../actions'
 import * as contract from '../contract'
-//import blockchainAPI from '../services/blockchain'
+import collectorAPI from '../services/collector'
 
 
 export function* createDev(action) {
@@ -40,8 +40,29 @@ export function* createDev(action) {
     //return yield put(actions.createdDevice(results))
 } 
 
+export function* getContract(){
+  let response = yield call(collectorAPI.getContract)
+  if (response.error) {
+    return yield put (actions.gotError(response.error))
+  }
+  // returns:  { "address": "0x0d...." } we get the address
+  // by yanking it out of the response.  
+  yield put (actions.gotContract(response.address))
+}
+
+export function* updateContract(action){
+  let response = yield call(collectorAPI.updateContract, { address : action.contract })
+  if (response.error) {
+    return yield put (actions.gotError(response.error))
+  } 
+  //TODO: figure out what to return here.  What does the URL return? 
+  yield put (actions.getContract())
+}
+
 export function* watchBlockchainRequest() {
   yield takeEvery(actions.CREATE_DEVICE, createDev)
+  yield takeEvery(actions.GET_CONTRACT, getContract)
+  yield takeEvery(actions.UPDATE_CONTRACT, updateContract)
 }
 
 export default function* rootSaga() {

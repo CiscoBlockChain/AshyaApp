@@ -1,12 +1,13 @@
 import React, { Component } from 'react'
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group'
 import { connect } from 'react-redux'
-import { createDevice } from '../actions'
+import { createDevice, getContract, updateContract } from '../actions'
 import Welcome from '../components/Welcome'
 import Wizard1 from '../components/Wizard1'
 import Wizard2 from '../components/Wizard2'
 import Wizard3 from '../components/Wizard3'
 import Wizard4 from '../components/Wizard4'
+import Main from '../components/Main'
 
 class Wizard extends Component {
   constructor(props) {
@@ -15,6 +16,8 @@ class Wizard extends Component {
       contractName: this.props.contractName || "myRaspberryPi",
       contractLocation: this.props.contractLocation || "Berlin, Germany",
       contractURL: this.props.contractURL || "https://example.com",
+      fetching: this.props.fetching,
+      contract: this.props.contract,
       pageForward: true,
       currentPage: 1
     }
@@ -24,6 +27,19 @@ class Wizard extends Component {
     this.nextPage = this.nextPage.bind(this);
     this.createContract = this.createContract.bind(this);
   }
+
+  componentDidMount() {
+    this.props.getContract()
+  }
+  
+  componentWillReceiveProps(nextProps) {
+    var address = nextProps.contract
+    console.log("next props received: " + nextProps.contract)
+    this.setState({
+      contract: address,
+    })
+  }
+
 
   /* changing form values */
   handleChange = (event) => {
@@ -48,6 +64,10 @@ class Wizard extends Component {
     this.props.createDevice(s.contractName, s.contractLocation, s.contractURL)
   }
 
+  deleteContract = () => {
+    this.props.updateContract("foo")
+  }
+
   /* for changing pages in the form */
   nextPage = (pageId) => {
     const s = this.state
@@ -63,13 +83,16 @@ class Wizard extends Component {
 
   render() {
     return (
-      <ReactCSSTransitionGroup
-        transitionName={ this.state.pageForward ? "page" : "prev" }
-        transitionEnterTimeout={500}
-        transitionLeaveTimeout={500}
-      >
-      {this.renderPage()}
-      </ReactCSSTransitionGroup>
+      this.state.contract === "" ? 
+        <ReactCSSTransitionGroup
+          transitionName={ this.state.pageForward ? "page" : "prev" }
+          transitionEnterTimeout={500}
+          transitionLeaveTimeout={500}
+        >
+        {this.renderPage()}
+        </ReactCSSTransitionGroup>
+      :
+        <Main address={this.state.contract} deleteFunc={this.deleteContract}/> 
     )
   }
 
@@ -114,11 +137,15 @@ class Wizard extends Component {
 const mapStateToProps = (state, ownProps) => ({
   contractName: state.blockchain.name,
   contractLocation: state.blockchain.location,
-  contractURL: state.blockchain.url
+  contractURL: state.blockchain.url,
+  fetching: state.blockchain.fetching,
+  contract: state.blockchain.contract
 })
 
 const mapDispatchToProps = (dispatch) => ({
   createDevice: (name, loc, url) => dispatch(createDevice(name, loc, url)),
+  getContract: () => dispatch(getContract()),
+  updateContract: (address) => dispatch(updateContract(address)),
 })
 
 
