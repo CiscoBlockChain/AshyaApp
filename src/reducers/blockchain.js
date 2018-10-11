@@ -38,6 +38,7 @@ const blockchain = (state = {
         featching: true
       })
     case BLOCKCHAIN_ERROR: 
+      console.log("blockchaing error: ", action.error)
       return Object.assign({}, state, {
         error: action.error,
         fetching: false

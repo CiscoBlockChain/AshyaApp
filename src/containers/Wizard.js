@@ -8,6 +8,7 @@ import Wizard2 from '../components/Wizard2'
 import Wizard3 from '../components/Wizard3'
 import Wizard4 from '../components/Wizard4'
 import Main from '../components/Main'
+import CError from '../components/CError'
 
 class Wizard extends Component {
   constructor(props) {
@@ -18,6 +19,7 @@ class Wizard extends Component {
       contractURL: this.props.contractURL || "https://example.com",
       fetching: this.props.fetching,
       contract: this.props.contract,
+      error: this.props.error,
       pageForward: true,
       currentPage: 1
     }
@@ -33,10 +35,13 @@ class Wizard extends Component {
   }
   
   componentWillReceiveProps(nextProps) {
-    var address = nextProps.contract
+    var address = nextProps.contract || ""
+    var err = nextProps.error || ""
     console.log("next props received: " + nextProps.contract)
+    console.log("error? " + nextProps.error)
     this.setState({
       contract: address,
+      error: err,
     })
   }
 
@@ -82,6 +87,11 @@ class Wizard extends Component {
   }
 
   render() {
+    if(this.state.error){
+      return (
+        <CError err={this.state.error}/>
+      )
+    }
     return (
       this.state.contract === "" ? 
         <ReactCSSTransitionGroup
@@ -139,7 +149,8 @@ const mapStateToProps = (state, ownProps) => ({
   contractLocation: state.blockchain.location,
   contractURL: state.blockchain.url,
   fetching: state.blockchain.fetching,
-  contract: state.blockchain.contract
+  contract: state.blockchain.contract,
+  error: state.blockchain.error
 })
 
 const mapDispatchToProps = (dispatch) => ({

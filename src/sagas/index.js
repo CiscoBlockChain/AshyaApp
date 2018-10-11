@@ -42,6 +42,9 @@ export function* createDev(action) {
 
 export function* getContract(){
   let response = yield call(collectorAPI.getContract)
+  if (response instanceof Error) {
+    return yield put (actions.gotError(response))
+  } 
   if (response.error) {
     return yield put (actions.gotError(response.error))
   }

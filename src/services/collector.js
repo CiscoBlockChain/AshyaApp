@@ -3,14 +3,13 @@ export const API = "http://" + hname + ":5050"
 
 const collectorAPI = {
   getContract() {
-    return fetch(API + '/contract', {
-
-    })
+    return fetch(API + '/contract', {})
     .then(statusHelper)
     .then(data => {
       return data
     })
     .catch( (error) => {
+      console.log("catch error: ", error)
       return error
     })
   },
