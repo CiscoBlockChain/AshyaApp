@@ -10,6 +10,7 @@ import Wizard4 from '../components/Wizard4'
 import Main from '../components/Main'
 import CError from '../components/CError'
 import Web3 from 'web3';
+import * as contract from '../contract'
 
 class Wizard extends Component {
   constructor(props) {
@@ -78,9 +79,36 @@ class Wizard extends Component {
   }
 
   createContract = () => {
-    const s = this.state
-    this.web3.getAccounts()
-    this.props.createDevice(s.contractName, s.contractLocation, s.contractURL)
+    // get the account
+    let account = this.provider.eth.accounts[0]
+    // estimate gas
+    let gasEstimate = this.provider.eth.estimateGas({ data: contract.bytecode });
+    // get this from etherscane
+    var abiArray = contract.abiArray;
+    //var MyContract = w3.eth.contract(abiArray);
+    let deviceContract = this.provider.eth.contract(abiArray);
+
+    /* https://web3js.readthedocs.io/en/1.0/web3-eth-contract.html#new-contract */
+    deviceContract.new({ from: account,
+                       data: contract.bytecode,
+                       gas: gasEstimate,
+                       arguments: [this.state.contractName, this.state.contractLocation, this.state.contractUrl]
+                    }, function(err, devContract){
+        if(!err) {
+            if(!deviceContract.address) {
+              console.log("Hash: ", deviceContract.transactionHash);
+            }else {
+              console.log("Address: ", deviceContract.address);
+            }
+        }else {
+          console.log(err)
+        }
+
+    });
+
+
+
+
   }
 
   deleteContract = () => {
