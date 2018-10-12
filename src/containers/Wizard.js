@@ -9,6 +9,7 @@ import Wizard3 from '../components/Wizard3'
 import Wizard4 from '../components/Wizard4'
 import Main from '../components/Main'
 import CError from '../components/CError'
+import Web3 from 'web3';
 
 class Wizard extends Component {
   constructor(props) {
@@ -21,17 +22,29 @@ class Wizard extends Component {
       contract: this.props.contract,
       error: this.props.error,
       pageForward: true,
-      currentPage: 1
+      currentPage: 1,
+      isConnected: false
     }
 
     this.renderPage = this.renderPage.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.nextPage = this.nextPage.bind(this);
     this.createContract = this.createContract.bind(this);
+    this.web3 = new Web3(new Web3.providers.HttpProvider('https://kovan.infura.io/1r0bIX2eewb5e9m2WAug'));
   }
+
+  componentWillMount() {
+    if(this.web3 && this.web3.isConnected()) {
+      this.setState({isConnected: true})
+    }
+  } 
 
   componentDidMount() {
     this.props.getContract()
+    if(this.web3 && this.web3.isConnected()) {
+      this.setState({isConnected: true})
+    }
+    console.log("Is connected: ", this.state.isConnected)
   }
   
   componentWillReceiveProps(nextProps) {
@@ -111,7 +124,7 @@ class Wizard extends Component {
   renderPage() {
     switch (this.state.currentPage) {
       case 1:
-        return (<Welcome key={1} nextClick={() => this.nextPage(2)}/>);
+        return (<Welcome key={1} nextClick={() => this.nextPage(2)} connected={this.state.isConnected}/>);
       case 2:
         return (<Wizard1 key={2} 
                 contractName={this.state.contractName} 
