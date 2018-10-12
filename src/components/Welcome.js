@@ -8,8 +8,7 @@ const Welcome = ({nextClick, w3}) => (
         <h1>Ashya Device</h1>
         { w3 ? 
           <div className="alert alert-info">
-            Connected the Blockchain Network!
-            {console.log("Blockchain", w3.eth.accounts)}
+            Connected the Blockchain Network.  Your account is: {w3.eth.accounts[0]}
           </div>
           :
           <div className="alert alert-danger">
