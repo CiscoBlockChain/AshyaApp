@@ -1,22 +1,23 @@
 import React from 'react'
 
-const Welcome = ({nextClick, connected}) => (
+const Welcome = ({nextClick, w3}) => (
     <div className="container">
       <div className="slider">
         <br/>
         <br/>
         <h1>Ashya Device</h1>
-        { connected ? 
+        { w3 ? 
           <div className="alert alert-info">
-            Connected To Blockchain
+            Connected the Blockchain Network!
+            {console.log("Blockchain", w3.eth.accounts)}
           </div>
           :
           <div className="alert alert-danger">
-            Could not connect to Blockchain
+            You will need to get Metamask for this application to work.  You can download it <a href="https://metamask.io/">here</a>
           </div>
         }
         <p className="lead">
-          Welcome to the Ashya Device Setup Wizard!  Let's get your IOT device ready to rent out and unleash its amazingness upon the world!
+          Welcome to the Ashya Device Setup Wizard!  Let's get your IOT device ready to rent out and unleash amazingness upon the world!
         </p>
         <button className="btn btn-primary btn-lg float-left" onClick={nextClick}> 
           Get Started!

@@ -23,28 +23,28 @@ class Wizard extends Component {
       error: this.props.error,
       pageForward: true,
       currentPage: 1,
-      isConnected: false
     }
-
+    this.provider = "";
     this.renderPage = this.renderPage.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.nextPage = this.nextPage.bind(this);
     this.createContract = this.createContract.bind(this);
-    this.web3 = new Web3(new Web3.providers.HttpProvider('https://kovan.infura.io/1r0bIX2eewb5e9m2WAug'));
   }
+ 
 
-  componentWillMount() {
-    if(this.web3 && this.web3.isConnected()) {
-      this.setState({isConnected: true})
-    }
-  } 
-
+  //addWeb3() 
   componentDidMount() {
+    var self = this;
+    window.addEventListener('load', function() {
+      if (typeof window.web3 !== 'undefined') {
+        self.setState({isConnected: true})
+        self.provider = new Web3(window.web3.currentProvider)
+        console.log(self.provider)
+      }else {
+        console.log("no web3 provided.")
+      }
+    })
     this.props.getContract()
-    if(this.web3 && this.web3.isConnected()) {
-      this.setState({isConnected: true})
-    }
-    console.log("Is connected: ", this.state.isConnected)
   }
   
   componentWillReceiveProps(nextProps) {
@@ -79,6 +79,7 @@ class Wizard extends Component {
 
   createContract = () => {
     const s = this.state
+    this.web3.getAccounts()
     this.props.createDevice(s.contractName, s.contractLocation, s.contractURL)
   }
 
@@ -124,7 +125,7 @@ class Wizard extends Component {
   renderPage() {
     switch (this.state.currentPage) {
       case 1:
-        return (<Welcome key={1} nextClick={() => this.nextPage(2)} connected={this.state.isConnected}/>);
+        return (<Welcome key={1} nextClick={() => this.nextPage(2)} w3={this.provider}/>);
       case 2:
         return (<Wizard1 key={2} 
                 contractName={this.state.contractName} 
