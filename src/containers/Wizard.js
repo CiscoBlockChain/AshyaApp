@@ -11,9 +11,7 @@ import Main from '../components/Main'
 import CError from '../components/CError'
 import * as contract from '../contract'
 import web3 from 'web3';
-import  Web3 from 'web3'
 import Web3 from 'web3';
-import * as contract from '../contract'
 
 class Wizard extends Component {
   constructor(props) {
