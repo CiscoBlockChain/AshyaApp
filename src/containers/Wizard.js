@@ -13,11 +13,8 @@ import CError from '../components/CError'
 import * as contract from '../contract'
 import web3 from 'web3';
 import  Web3 from 'web3'
-
-=======
 import Web3 from 'web3';
 import * as contract from '../contract'
->>>>>>> c3b5fb975be5673e2d32bff2a650c0333ba53817
 
 class Wizard extends Component {
   constructor(props) {
@@ -113,7 +110,7 @@ class Wizard extends Component {
         }
 
     });
-<<<<<<< HEAD
+
   }
 
   validate = () => {
@@ -160,12 +157,7 @@ class Wizard extends Component {
     else{
       console.log('MetaMask is not installed')
     }
-=======
 
-
-
-
->>>>>>> c3b5fb975be5673e2d32bff2a650c0333ba53817
   }
 
   deleteContract = () => {
