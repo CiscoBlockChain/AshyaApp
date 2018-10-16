@@ -9,8 +9,8 @@ import Wizard3 from '../components/Wizard3'
 import Wizard4 from '../components/Wizard4'
 import Main from '../components/Main'
 import CError from '../components/CError'
-import Web3 from 'web3';
 import * as contract from '../contract'
+import Web3 from 'web3';
 
 class Wizard extends Component {
   constructor(props) {
@@ -21,32 +21,58 @@ class Wizard extends Component {
       contractURL: this.props.contractURL || "https://example.com",
       fetching: this.props.fetching,
       contract: this.props.contract,
-      error: this.props.error,
+      error: this.props.error, // for errors connecting to ashya collector
+      merror: "", // for metamask errors.
       pageForward: true,
       currentPage: 1,
+      accounts: [],
+      provider: "",
     }
-    this.provider = "";
     this.renderPage = this.renderPage.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.nextPage = this.nextPage.bind(this);
     this.createContract = this.createContract.bind(this);
+    this.validate = this.validate.bind(this);
   }
  
 
   //addWeb3() 
   componentDidMount() {
-    var self = this;
+    var t = this;
     window.addEventListener('load', function() {
       if (typeof window.web3 !== 'undefined') {
-        self.setState({isConnected: true})
-        self.provider = new Web3(window.web3.currentProvider)
-        //console.log(self.provider)
+        t.validate(t)
       }else {
-        //console.log("no web3 provided.")
+        console.log("no web3 provided.")
       }
     })
     this.props.getContract()
   }
+
+  validate = (t) => {
+    t.setState({isConnected: true})
+    var p = new Web3(window.web3.currentProvider)
+    t.setState({provider : p})
+    console.log('MetaMask is installed')
+    p.eth.getAccounts(function(err, acc) {
+      if (err) {
+        console.error(err)
+        t.setState({merror: err})
+        return
+      }
+      if (acc.length === 0) {
+        console.log('MetaMask is locked')
+        t.setState({merror: "Metamask is locked"})
+        return
+      }
+      t.setState({merror : ""})
+      t.setState({accounts: acc});
+    })
+  }
+
+
+
+  
   
   componentWillReceiveProps(nextProps) {
     var address = nextProps.contract || ""
@@ -81,7 +107,7 @@ class Wizard extends Component {
 
   createContract = () => {
     // estimate gas
-    this.provider.eth.estimateGas({ data: contract.bytecode }, this.cc1);
+    this.state.provider.eth.estimateGas({ data: contract.bytecode }, this.cc1);
   }
 
   cc1 = (error, gasEstimate) => {
@@ -92,17 +118,13 @@ class Wizard extends Component {
     }
     console.log(gasEstimate)
     // get the account
-    let account = this.provider.eth.accounts[0]
+    let account = this.state.provider.eth.accounts[0]
     // get this from etherscane
     var abiArray = contract.abiArray;
     //var MyContract = w3.eth.contract(abiArray);
     /* https://web3js.readthedocs.io/en/1.0/web3-eth-contract.html#new-contract */
-    console.log("contract bytecode: ", contract.bytecode)
-    console.log("contract params: ", this.state.contractName, this.state.contractLocation,this.state.contractURL)
     
-
-    
-    let deviceContract = new this.provider.eth.Contract(abiArray, null, { data: contract.bytecode });
+    let deviceContract = new this.state.provider.eth.Contract(abiArray, null, { data: contract.bytecode });
     /* https://web3js.readthedocs.io/en/1.0/web3-eth-contract.html#contract-deploy */
     console.log("contract", deviceContract)
     deviceContract.deploy({
@@ -136,9 +158,7 @@ class Wizard extends Component {
         console.log("new contract instance: ", newContractInstance.options.address);
       })
 
-
   }
-
   deleteContract = () => {
     this.props.updateContract("foo")
   }
@@ -158,6 +178,7 @@ class Wizard extends Component {
 
   render() {
     if(this.state.error){
+    
       return (
         <CError err={this.state.error}/>
       )
@@ -181,7 +202,7 @@ class Wizard extends Component {
   renderPage() {
     switch (this.state.currentPage) {
       case 1:
-        return (<Welcome key={1} nextClick={() => this.nextPage(2)} w3={this.provider}/>);
+        return (<Welcome key={1} nextClick={() => this.nextPage(2)} accounts={this.state.accounts} merror={this.state.merror} />);
       case 2:
         return (<Wizard1 key={2} 
                 contractName={this.state.contractName} 
@@ -232,4 +253,4 @@ const mapDispatchToProps = (dispatch) => ({
 
 export default connect(
   mapStateToProps,
-  mapDispatchToProps)(Wizard)
+  mapDispatchToProps)(Wizard) 

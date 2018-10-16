@@ -1,18 +1,18 @@
 import React from 'react'
 
-const Welcome = ({nextClick, w3}) => (
+const Welcome = ({nextClick, accounts, merror}) => (
     <div className="container">
       <div className="slider">
         <br/>
         <br/>
         <h1>Ashya Device</h1>
-        { w3 ? 
+        { ! merror ? 
           <div className="alert alert-info">
-            Connected the Blockchain Network.  Your account is: {w3.eth.accounts[0]}
+              Connected the Blockchain Network.  Your account is: {accounts[0]} 
           </div>
           :
           <div className="alert alert-danger">
-            You will need to get Metamask for this application to work.  You can download it <a href="https://metamask.io/">here</a>
+            <b>{merror}</b>  Metamask info here: <a href="https://metamask.io/">here</a>
           </div>
         }
         <p className="lead">
