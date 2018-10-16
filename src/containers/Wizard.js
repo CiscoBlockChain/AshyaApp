@@ -12,10 +12,6 @@ import CError from '../components/CError'
 import * as contract from '../contract'
 import web3 from 'web3';
 import Web3 from 'web3';
-<<<<<<< HEAD
-
-=======
->>>>>>> 3ba24f9540f03eaa40f5368ed8a6f34c0b26453f
 
 class Wizard extends Component {
   constructor(props) {
