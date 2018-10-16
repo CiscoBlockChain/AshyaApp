@@ -40,9 +40,9 @@ class Wizard extends Component {
       if (typeof window.web3 !== 'undefined') {
         self.setState({isConnected: true})
         self.provider = new Web3(window.web3.currentProvider)
-        console.log(self.provider)
+        //console.log(self.provider)
       }else {
-        console.log("no web3 provided.")
+        //console.log("no web3 provided.")
       }
     })
     this.props.getContract()
@@ -51,8 +51,7 @@ class Wizard extends Component {
   componentWillReceiveProps(nextProps) {
     var address = nextProps.contract || ""
     var err = nextProps.error || ""
-    console.log("next props received: " + nextProps.contract)
-    console.log("error? " + nextProps.error)
+    //console.log("next props received: " + nextProps.contract)
     this.setState({
       contract: address,
       error: err,
@@ -78,35 +77,64 @@ class Wizard extends Component {
     this.forceUpdate();
   }
 
+
+
   createContract = () => {
+    // estimate gas
+    this.provider.eth.estimateGas({ data: contract.bytecode }, this.cc1);
+  }
+
+  cc1 = (error, gasEstimate) => {
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+    console.log(gasEstimate)
     // get the account
     let account = this.provider.eth.accounts[0]
-    // estimate gas
-    let gasEstimate = this.provider.eth.estimateGas({ data: contract.bytecode });
     // get this from etherscane
     var abiArray = contract.abiArray;
     //var MyContract = w3.eth.contract(abiArray);
-    let deviceContract = this.provider.eth.contract(abiArray);
-
     /* https://web3js.readthedocs.io/en/1.0/web3-eth-contract.html#new-contract */
-    deviceContract.new({ from: account,
-                       data: contract.bytecode,
-                       gas: gasEstimate,
-                       arguments: [this.state.contractName, this.state.contractLocation, this.state.contractUrl]
-                    }, function(err, devContract){
-        if(!err) {
-            if(!deviceContract.address) {
-              console.log("Hash: ", deviceContract.transactionHash);
-            }else {
-              console.log("Address: ", deviceContract.address);
-            }
-        }else {
-          console.log(err)
-        }
+    console.log("contract bytecode: ", contract.bytecode)
+    console.log("contract params: ", this.state.contractName, this.state.contractLocation,this.state.contractURL)
+    
 
-    });
-
-
+    
+    let deviceContract = new this.provider.eth.Contract(abiArray, null, { data: contract.bytecode });
+    /* https://web3js.readthedocs.io/en/1.0/web3-eth-contract.html#contract-deploy */
+    console.log("contract", deviceContract)
+    deviceContract.deploy({
+      data: contract.bytecode,
+      arguments: [
+        this.state.contractName,
+        this.state.contractLocation,
+        this.state.contractURL
+      ]
+      
+      }).send({
+        from: account,
+        gas: gasEstimate
+      },
+      function(error, transactionHash){
+        console.log("sent: error: ", error, " hash: ", transactionHash)
+      })
+      .on('error', function(error) {
+        console.error(error)
+      })
+      .on('transactionHash', function(transactionHash) {
+        console.log("successful transaction hash: ", transactionHash)
+      })
+      .on('receipt', function(receipt) {
+        console.log("got receipt! address: ", receipt.contractAddress)
+      })
+      .on('confirmation', function(confirmationNumber, receipt) {
+        console.log("got confirmation: ", confirmationNumber)
+      })
+      .then(function(newContractInstance){
+        console.log("new contract instance: ", newContractInstance.options.address);
+      })
 
 
   }
