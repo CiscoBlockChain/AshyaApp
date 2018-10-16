@@ -9,7 +9,6 @@ import Wizard3 from '../components/Wizard3'
 import Wizard4 from '../components/Wizard4'
 import Main from '../components/Main'
 import CError from '../components/CError'
-<<<<<<< HEAD
 import * as contract from '../contract'
 import web3 from 'web3';
 import  Web3 from 'web3'
