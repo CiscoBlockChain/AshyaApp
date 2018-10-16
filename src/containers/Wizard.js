@@ -9,12 +9,10 @@ import Wizard3 from '../components/Wizard3'
 import Wizard4 from '../components/Wizard4'
 import Main from '../components/Main'
 import CError from '../components/CError'
-<<<<<<< HEAD
 import * as contract from '../contract'
 import web3 from 'web3';
-import  Web3 from 'web3'
 import Web3 from 'web3';
-import * as contract from '../contract'
+
 
 class Wizard extends Component {
   constructor(props) {
@@ -120,6 +118,7 @@ class Wizard extends Component {
     var requestApproval;
     if (typeof web3 !== 'undefined'){
       console.log('MetaMask is installed')
+      console.log(web3)
       web3.eth.getAccounts(function(err, accounts){
         if (err != null) {
           console.log(err)
@@ -183,6 +182,7 @@ class Wizard extends Component {
         <CError err={this.state.error}/>
       )
     }
+    this.validate();
     return (
       this.state.contract === "" ? 
         <ReactCSSTransitionGroup
