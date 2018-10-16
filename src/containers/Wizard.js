@@ -9,6 +9,10 @@ import Wizard3 from '../components/Wizard3'
 import Wizard4 from '../components/Wizard4'
 import Main from '../components/Main'
 import CError from '../components/CError'
+import * as contract from '../contract'
+import web3 from 'web3';
+import  Web3 from 'web3'
+
 
 class Wizard extends Component {
   constructor(props) {
@@ -21,16 +25,29 @@ class Wizard extends Component {
       contract: this.props.contract,
       error: this.props.error,
       pageForward: true,
-      currentPage: 1
+      currentPage: 1,
     }
-
+    this.provider = "";
     this.renderPage = this.renderPage.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.nextPage = this.nextPage.bind(this);
     this.createContract = this.createContract.bind(this);
+    this.validate = this.validate.bind(this);
   }
+ 
 
+  //addWeb3() 
   componentDidMount() {
+    var self = this;
+    window.addEventListener('load', function() {
+      if (typeof window.web3 !== 'undefined') {
+        self.setState({isConnected: true})
+        self.provider = new Web3(window.web3.currentProvider)
+        console.log(self.provider)
+      }else {
+        console.log("no web3 provided.")
+      }
+    })
     this.props.getContract()
   }
   
@@ -65,8 +82,78 @@ class Wizard extends Component {
   }
 
   createContract = () => {
-    const s = this.state
-    this.props.createDevice(s.contractName, s.contractLocation, s.contractURL)
+    // get the account
+    let account = this.provider.eth.accounts[0]
+    // estimate gas
+    let gasEstimate = this.provider.eth.estimateGas({ data: contract.bytecode });
+    // get this from etherscane
+    var abiArray = contract.abiArray;
+    //var MyContract = w3.eth.contract(abiArray);
+    let deviceContract = this.provider.eth.contract(abiArray);
+
+    /* https://web3js.readthedocs.io/en/1.0/web3-eth-contract.html#new-contract */
+    deviceContract.new({ from: account,
+                       data: contract.bytecode,
+                       gas: gasEstimate,
+                       arguments: [this.state.contractName, this.state.contractLocation, this.state.contractUrl]
+                    }, function(err, devContract){
+        if(!err) {
+            if(!deviceContract.address) {
+              console.log("Hash: ", deviceContract.transactionHash);
+            }else {
+              console.log("Address: ", deviceContract.address);
+            }
+        }else {
+          console.log(err)
+        }
+
+    });
+  }
+
+  validate = () => {
+    var tokenInst;
+    var transactionApproval;
+    var selectedPlanCost;
+    var requestApproval;
+    if (typeof web3 !== 'undefined'){
+      console.log('MetaMask is installed')
+      web3.eth.getAccounts(function(err, accounts){
+        if (err != null) {
+          console.log(err)
+        }
+        else if (accounts.length === 0) {
+          console.log('MetaMask is locked')
+        }
+        else {
+          console.log('MetaMask is unlocked')
+        
+          tokenInst.balanceOf(
+            web3.eth.accounts[0], 
+            function (error, result) {
+       
+            if (!error && result) {
+              var balance = result.c[0];
+              if (balance < selectedPlanCost * (100000000)) {
+                console.log('MetaMask has not balance')
+                return false;
+              }
+              console.log('MetaMask has balance')
+              if (transactionApproval === true ){
+                requestApproval();
+                transactionApproval = false;
+              }
+            }
+            else {
+              console.error(error);
+            }
+            return false;
+          });
+        }
+      });
+    } 
+    else{
+      console.log('MetaMask is not installed')
+    }
   }
 
   deleteContract = () => {
@@ -111,7 +198,7 @@ class Wizard extends Component {
   renderPage() {
     switch (this.state.currentPage) {
       case 1:
-        return (<Welcome key={1} nextClick={() => this.nextPage(2)}/>);
+        return (<Welcome key={1} nextClick={() => this.nextPage(2)} w3={this.provider}/>);
       case 2:
         return (<Wizard1 key={2} 
                 contractName={this.state.contractName} 
@@ -162,4 +249,4 @@ const mapDispatchToProps = (dispatch) => ({
 
 export default connect(
   mapStateToProps,
-  mapDispatchToProps)(Wizard)
+  mapDispatchToProps)(Wizard) 
