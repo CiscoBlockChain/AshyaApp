@@ -177,7 +177,7 @@ class Wizard extends Component {
 
 
   deleteContract = () => {
-    this.props.updateContract("foo")
+    this.props.updateContract("")
   }
 
   /* for changing pages in the form */
