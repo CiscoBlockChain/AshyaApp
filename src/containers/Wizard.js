@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group'
 import { connect } from 'react-redux'
-import { createDevice, getContract, updateContract } from '../actions'
+import { getContract, updateContract } from '../actions'
 import Welcome from '../components/Welcome'
 import Wizard1 from '../components/Wizard1'
 import Wizard2 from '../components/Wizard2'
@@ -21,12 +21,15 @@ class Wizard extends Component {
       contractURL: this.props.contractURL || "https://example.com",
       fetching: this.props.fetching,
       contract: this.props.contract,
+      contractStatus: "", // for tracking the state of the contract creation.
       error: this.props.error, // for errors connecting to ashya collector
       merror: "", // for metamask errors.
       pageForward: true,
       currentPage: 1,
       accounts: [],
       provider: "",
+      gasPrice: "",  // price of gas 
+      gasLimit: "",  // amount of gas willing to pay
     }
     this.renderPage = this.renderPage.bind(this);
     this.handleChange = this.handleChange.bind(this);
@@ -66,6 +69,7 @@ class Wizard extends Component {
         return
       }
       t.setState({merror : ""})
+      // set accounts
       t.setState({accounts: acc});
     }) 
   }
@@ -108,61 +112,70 @@ class Wizard extends Component {
 
   createContract = () => {
     // estimate gas
-    this.state.provider.eth.estimateGas({ data: contract.bytecode }, this.cc1);
+    this.state.provider.eth.estimateGas({ data: contract.bytecode }, this.cc0);
   }
 
-  cc1 = (error, gasEstimate) => {
+  cc0 = (error, gasEstimate) => {
+    this.setState({gasLimit: gasEstimate })
+    this.state.provider.eth.getGasPrice(this.cc1)
+  } 
 
+  cc1 = (error, gasPrice) => {
+    this.setState({gasPrice: gasPrice});
+    
     if (error) {
       console.error(error);
       return;
     }
-    console.log(gasEstimate)
     // get the account
-    let account = this.state.provider.eth.accounts[0]
+    let account = this.state.accounts[0]
     // get this from etherscane
     var abiArray = contract.abiArray;
     //var MyContract = w3.eth.contract(abiArray);
     /* https://web3js.readthedocs.io/en/1.0/web3-eth-contract.html#new-contract */
-    
-    //let deviceContract = new this.state.provider.eth.Contract(abiArray, null, { data: contract.bytecode });
-    var deviceContract = this.state.provider.eth.contract(abiArray);
+    let self = this 
+    let deviceContract = new this.state.provider.eth.Contract(abiArray, null, { data: contract.bytecode });
+    //var deviceContract = this.state.provider.eth.Contract(abiArray, null, );
     /* https://web3js.readthedocs.io/en/1.0/web3-eth-contract.html#contract-deploy */
     console.log("contract", deviceContract)
-    this.createContract({
+    console.log("gas price: ", this.state.gasPrice, " gas limit: ", this.state.gasLimit)
+    deviceContract.deploy({
       data: contract.bytecode,
       arguments: [
         this.state.contractName,
         this.state.contractLocation,
         this.state.contractURL
-      ]})
-      console.log("finished deployment")
-    }
-      
-      // }).send({
-      //   from: account,
-      //   gas: gasEstimate
-      // },
-  //     function(error, transactionHash){
-  //       console.log("sent: error: ", error, " hash: ", transactionHash)
-  //     })
-  //     .on('error', function(error) {
-  //       console.error(error)
-  //     })
-  //     .on('transactionHash', function(transactionHash) {
-  //       console.log("successful transaction hash: ", transactionHash)
-  //     })
-  //     .on('receipt', function(receipt) {
-  //       console.log("got receipt! address: ", receipt.contractAddress)
-  //     })
-  //     .on('confirmation', function(confirmationNumber, receipt) {
-  //       console.log("got confirmation: ", confirmationNumber)
-  //     })
-  //     .then(function(newContractInstance){
-  //       console.log("new contract instance: ", newContractInstance.options.address);
-  //     })
+      ]}).send({
+         from: account,
+         gas: this.state.gasLimit + 80000,
+         gasPrice: this.state.gasPrice,
+       }, function(error, transactionHash){
+        self.setState({contractStatus: "Submitted contract with Transaction Hash: ", transactionHash})
+       })
+      .on('error', function(error) {
+        console.error(error)
+        self.setState({contractStatus: "Error submitting contract: ", error})
+      })
+      .on('transactionHash', function(transactionHash) {
+        self.setState({contractStatus: "Successfully submitted transaction hash: " +  transactionHash})
+      })
+      .on('receipt', function(receipt) {
+        self.setState({contractStatus: "Contract Address: " + receipt.contractAddress})
+        console.log("got receipt! address: ", receipt.contractAddress)
+      })
+      .on('confirmation', function(confirmationNumber, receipt) {
+        self.setState({contractStatus: "Contract Address: "+ receipt.contractAddress + " Confirmation: " + confirmationNumber})
+        //console.log("got confirmation: ", confirmationNumber)
+      })
+      .then(function(newContractInstance){
+        console.log("Created New Contract Instance: ", newContractInstance.options.address);
+        // store contract in Ashya Device. 
+        self.props.updateContract(newContractInstance.options.address);
+      })
 
-  // }
+  } 
+
+
   deleteContract = () => {
     this.props.updateContract("foo")
   }
@@ -230,6 +243,7 @@ class Wizard extends Component {
                 contractName={this.state.contractName} 
                 contractLocation={this.state.contractLocation} 
                 contractURL={this.state.contractURL} 
+                contractStatus={this.state.contractStatus}
                 prevClick={() => this.nextPage(4)}
                 createContract={this.createContract}/>);
     
@@ -249,9 +263,8 @@ const mapStateToProps = (state, ownProps) => ({
 })
 
 const mapDispatchToProps = (dispatch) => ({
-  createDevice: (name, loc, url) => dispatch(createDevice(name, loc, url)),
-  getContract: () => dispatch(getContract()),
-  updateContract: (address) => dispatch(updateContract(address)),
+  getContract: () => dispatch(getContract()), // get the current contract. 
+  updateContract: (address) => dispatch(updateContract(address)), // update contract with Ashya Device
 })
 
 

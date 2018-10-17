@@ -24,7 +24,6 @@ export function* updateContract(action){
   if (response.error) {
     return yield put (actions.gotError(response.error))
   } 
-  //TODO: figure out what to return here.  What does the URL return? 
   yield put (actions.getContract())
 }
 

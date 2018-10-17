@@ -1,8 +1,9 @@
 import React from 'react'
 
 const Wizard4 = ({prevClick, handleChange, createContract,
-                  contractName, contractLocation, contractURL}) => (
+                  contractName, contractStatus, contractLocation, contractURL}) => (
     <div className="container">
+     { contractStatus === "" ? 
       <div className="slider text-center">
         <br/>
         <br/>
@@ -18,6 +19,13 @@ const Wizard4 = ({prevClick, handleChange, createContract,
           Yes, create the contract
         </button>
       </div>
+      : 
+      <div className="slider text-center">
+        <div className="alert alert-info">
+          <p className="lead">{contractStatus}</p>
+        </div>
+      </div>
+      }
     </div>
 );
 
