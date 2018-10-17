@@ -67,8 +67,9 @@ class Wizard extends Component {
       }
       t.setState({merror : ""})
       t.setState({accounts: acc});
-    })
+    }) 
   }
+
 
 
 
@@ -124,41 +125,44 @@ class Wizard extends Component {
     //var MyContract = w3.eth.contract(abiArray);
     /* https://web3js.readthedocs.io/en/1.0/web3-eth-contract.html#new-contract */
     
-    let deviceContract = new this.state.provider.eth.Contract(abiArray, null, { data: contract.bytecode });
+    //let deviceContract = new this.state.provider.eth.Contract(abiArray, null, { data: contract.bytecode });
+    var deviceContract = this.state.provider.eth.contract(abiArray);
     /* https://web3js.readthedocs.io/en/1.0/web3-eth-contract.html#contract-deploy */
     console.log("contract", deviceContract)
-    deviceContract.deploy({
+    this.createContract({
       data: contract.bytecode,
       arguments: [
         this.state.contractName,
         this.state.contractLocation,
         this.state.contractURL
-      ]
+      ]})
+      console.log("finished deployment")
+    }
       
-      }).send({
-        from: account,
-        gas: gasEstimate
-      },
-      function(error, transactionHash){
-        console.log("sent: error: ", error, " hash: ", transactionHash)
-      })
-      .on('error', function(error) {
-        console.error(error)
-      })
-      .on('transactionHash', function(transactionHash) {
-        console.log("successful transaction hash: ", transactionHash)
-      })
-      .on('receipt', function(receipt) {
-        console.log("got receipt! address: ", receipt.contractAddress)
-      })
-      .on('confirmation', function(confirmationNumber, receipt) {
-        console.log("got confirmation: ", confirmationNumber)
-      })
-      .then(function(newContractInstance){
-        console.log("new contract instance: ", newContractInstance.options.address);
-      })
+      // }).send({
+      //   from: account,
+      //   gas: gasEstimate
+      // },
+  //     function(error, transactionHash){
+  //       console.log("sent: error: ", error, " hash: ", transactionHash)
+  //     })
+  //     .on('error', function(error) {
+  //       console.error(error)
+  //     })
+  //     .on('transactionHash', function(transactionHash) {
+  //       console.log("successful transaction hash: ", transactionHash)
+  //     })
+  //     .on('receipt', function(receipt) {
+  //       console.log("got receipt! address: ", receipt.contractAddress)
+  //     })
+  //     .on('confirmation', function(confirmationNumber, receipt) {
+  //       console.log("got confirmation: ", confirmationNumber)
+  //     })
+  //     .then(function(newContractInstance){
+  //       console.log("new contract instance: ", newContractInstance.options.address);
+  //     })
 
-  }
+  // }
   deleteContract = () => {
     this.props.updateContract("foo")
   }
