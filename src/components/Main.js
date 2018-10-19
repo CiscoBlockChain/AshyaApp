@@ -1,6 +1,6 @@
 import React from 'react'
 
-const Main = ({address, deleteFunc}) => (
+const Main = ({address, registerFunc, deleteFunc}) => (
     <div className="container">
         <br/>
         <br/>
@@ -13,6 +13,18 @@ const Main = ({address, deleteFunc}) => (
         <button className="btn btn-danger btn-lg" onClick={deleteFunc}>
           Delete
         </button>
+        <hr/>
+        <div>
+          <h2 >Device Registration</h2>
+          <p className="lead">
+            You can register your device to make it viewable on <a href="https://ashya.io">Ashya.io</a>.
+            This way people can subscribe to your device. 
+            The cost for registration is 0.001 Ether.  You pay no other fees and people will subscribe to you directly. 
+          </p>
+          <button className="btn btn-info btn-lg" onClick={registerFunc}>
+            Register Device
+          </button>
+        </div>
     </div>
 );
 

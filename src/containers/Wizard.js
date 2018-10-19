@@ -108,7 +108,66 @@ class Wizard extends Component {
     this.forceUpdate();
   }
 
+  // registers the contract with the Ashya Registry at Ashya.io
+  registerContract = () => {
+    console.log("register contract with ", contract.registryAddress) 
+    let deviceContract = new this.state.provider.eth.Contract(contract.abiArray, this.state.contract, { data: contract.bytecode });
+    console.log(deviceContract)
+    console.log(deviceContract.methods)
+    deviceContract.methods.registerDevice(contract.registryAddress).estimateGas({from: this.state.accounts[0], value: 1000000000000000}, this.rc0)
 
+  }
+
+  rc0 = (error, gasEstimate) => {
+    if (error) {
+      console.error("Got error with getting gas estimate")
+      console.error(error);
+      return
+    }
+    console.log("Got gas Estimate: ", gasEstimate)
+    this.setState({gasLimit: gasEstimate})
+    this.state.provider.eth.getGasPrice(this.rc1)
+  }
+
+  rc1 = (error, gasPrice) => {
+    this.setState({gasPrice: gasPrice});
+    if (error) {
+      console.error(error);
+      return
+    }
+    let self = this
+    let account = this.state.accounts[0]
+    let deviceContract = new this.state.provider.eth.Contract(contract.abiArray, this.state.contract, { data: contract.bytecode });
+    console.log("Registering the device")
+    deviceContract.methods.registerDevice(contract.registryAddress).send({
+         from: account,
+         gas: this.state.gasLimit + 80000,
+         gasPrice: this.state.gasPrice,
+         value:  1000000000000000,
+    }, function(error, transactionHash){
+        self.setState({contractStatus: "Submitted contract with Transaction Hash: ", transactionHash})
+       })
+      .on('error', function(error) {
+        console.error(error)
+        self.setState({contractStatus: "Error submitting contract: ", error})
+      })
+      .on('transactionHash', function(transactionHash) {
+        self.setState({contractStatus: "Successfully submitted transaction hash: " +  transactionHash})
+      })
+      .on('receipt', function(receipt) {
+        self.setState({contractStatus: "Contract Address: " + receipt.contractAddress})
+        console.log("got receipt! address: ", receipt.contractAddress)
+      })
+      .on('confirmation', function(confirmationNumber, receipt) {
+        self.setState({contractStatus: "Contract Address: "+ receipt.contractAddress + " Confirmation: " + confirmationNumber})
+        //console.log("got confirmation: ", confirmationNumber)
+      })
+      .then(function(newContractInstance){
+        console.log("Created New Contract Instance: ", newContractInstance.options.address);
+        // store contract in Ashya Device. 
+        self.props.updateContract(newContractInstance.options.address);
+      })
+  }
 
   createContract = () => {
     // estimate gas
@@ -129,12 +188,9 @@ class Wizard extends Component {
     }
     // get the account
     let account = this.state.accounts[0]
-    // get this from etherscane
-    var abiArray = contract.abiArray;
-    //var MyContract = w3.eth.contract(abiArray);
     /* https://web3js.readthedocs.io/en/1.0/web3-eth-contract.html#new-contract */
     let self = this 
-    let deviceContract = new this.state.provider.eth.Contract(abiArray, null, { data: contract.bytecode });
+    let deviceContract = new this.state.provider.eth.Contract(contract.abiArray, null, { data: contract.bytecode });
     //var deviceContract = this.state.provider.eth.Contract(abiArray, null, );
     /* https://web3js.readthedocs.io/en/1.0/web3-eth-contract.html#contract-deploy */
     console.log("contract", deviceContract)
@@ -210,7 +266,7 @@ class Wizard extends Component {
         {this.renderPage()}
         </ReactCSSTransitionGroup>
       :
-        <Main address={this.state.contract} deleteFunc={this.deleteContract}/> 
+        <Main address={this.state.contract} registerFunc={this.registerContract} deleteFunc={this.deleteContract}/> 
     )
   }
 
