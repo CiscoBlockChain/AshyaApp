@@ -114,7 +114,7 @@ class Wizard extends Component {
     let deviceContract = new this.state.provider.eth.Contract(contract.abiArray, this.state.contract, { data: contract.bytecode });
     console.log(deviceContract)
     console.log(deviceContract.methods)
-    deviceContract.methods.registerDevice(contract.registryAddress).estimateGas({from: this.state.accounts[0], value: 1000000000000000}, this.rc0)
+    deviceContract.methods.registerDevice(contract.registryAddress).estimateGas({from: this.state.accounts[0], value: 40000000000000000}, this.rc0)
 
   }
 
@@ -141,9 +141,9 @@ class Wizard extends Component {
     console.log("Registering the device")
     deviceContract.methods.registerDevice(contract.registryAddress).send({
          from: account,
-         gas: this.state.gasLimit + 80000,
+         gas: this.state.gasLimit + 320000,
          gasPrice: this.state.gasPrice,
-         value:  1000000000000000,
+         value:  40000000000000000,
     }, function(error, transactionHash){
         self.setState({contractStatus: "Submitted contract with Transaction Hash: ", transactionHash})
        })
@@ -203,7 +203,7 @@ class Wizard extends Component {
         this.state.contractURL
       ]}).send({
          from: account,
-         gas: this.state.gasLimit + 80000,
+         gas: this.state.gasLimit + 320000,
          gasPrice: this.state.gasPrice,
        }, function(error, transactionHash){
         self.setState({contractStatus: "Submitted contract with Transaction Hash: ", transactionHash})
