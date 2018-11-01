@@ -25,7 +25,6 @@ const blockchain = (state = {
         fetching: true
       })
     case GOT_CONTRACT:
-      console.log("got contract....")
       return Object.assign({}, state, {
         fetching: false,
         contract: action.contract

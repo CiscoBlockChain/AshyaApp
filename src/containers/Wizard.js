@@ -42,8 +42,20 @@ class Wizard extends Component {
   //addWeb3() 
   componentDidMount() {
     var t = this;
-    window.addEventListener('load', function() {
-      if (typeof window.web3 !== 'undefined') {
+    window.addEventListener('load', async () =>  {
+      // support november 2nd update: 
+      // https://medium.com/metamask/https-medium-com-metamask-breaking-change-injecting-web3-7722797916a8
+      if (window.ethereum) {
+        console.log("New ethereum")
+        window.web3 = new Web3(window.ethereum);
+        try {
+          await window.ethereum.enable();
+          t.validate(t)
+        } catch (error) {
+          t.setState({merror: "Metamask not enabled."})
+        }
+      }
+      else if (typeof window.web3 !== 'undefined') {
         t.validate(t)
       }else {
         console.log("no web3 provided.")
@@ -71,6 +83,7 @@ class Wizard extends Component {
       t.setState({merror : ""})
       // set accounts
       t.setState({accounts: acc});
+    
     }) 
   }
 
@@ -109,24 +122,32 @@ class Wizard extends Component {
   }
 
   // registers the contract with the Ashya Registry at Ashya.io
+  /*
   registerContract = () => {
     console.log("register contract with ", contract.registryAddress) 
     let deviceContract = new this.state.provider.eth.Contract(contract.abiArray, this.state.contract, { data: contract.bytecode });
     console.log(deviceContract)
     console.log(deviceContract.methods)
-    deviceContract.methods.registerDevice(contract.registryAddress).estimateGas({from: this.state.accounts[0], value: 40000000000000000}, this.rc0)
+    deviceContract.methods.registerDevice(contract.registryAddress).estimateGas({from: this.state.accounts[0], value: 10000000000000000}, this.rc0)
 
   }
+*/
+  registerContract = () => {
+    let deviceContract = new this.state.provider.eth.Contract(contract.abiArray, this.state.contract, { data: contract.bytecode });
+    deviceContract.methods.registerDevice(contract.registryAddress).estimateGas({from: this.state.accounts[0], value: 400000000000000000}, this.rc0)
+  }
 
-  rc0 = (error, gasEstimate) => {
-    if (error) {
+  rc0 = (err, gasEstimate) => {
+    console.log("gas estimate: ", gasEstimate)
+    if (err) {
       console.error("Got error with getting gas estimate")
-      console.error(error);
-      return
+      console.error(err);
+      this.setState({merror: err})
+    }else {
+      console.log("Got gas Estimate: ", gasEstimate)
+      this.setState({gasLimit: gasEstimate})
+      this.state.provider.eth.getGasPrice(this.rc1)
     }
-    console.log("Got gas Estimate: ", gasEstimate)
-    this.setState({gasLimit: gasEstimate})
-    this.state.provider.eth.getGasPrice(this.rc1)
   }
 
   rc1 = (error, gasPrice) => {
