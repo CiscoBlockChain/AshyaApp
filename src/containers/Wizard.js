@@ -9,8 +9,9 @@ import Wizard3 from '../components/Wizard3'
 import Wizard4 from '../components/Wizard4'
 import Main from '../components/Main'
 import CError from '../components/CError'
-import * as contract from '../contract'
+import * as contract from '../contract.js'
 import Web3 from 'web3';
+
 
 class Wizard extends Component {
   constructor(props) {
@@ -122,20 +123,22 @@ class Wizard extends Component {
   }
 
   // registers the contract with the Ashya Registry at Ashya.io
-  /*
-  registerContract = () => {
-    console.log("register contract with ", contract.registryAddress) 
-    let deviceContract = new this.state.provider.eth.Contract(contract.abiArray, this.state.contract, { data: contract.bytecode });
-    console.log(deviceContract)
-    console.log(deviceContract.methods)
-    deviceContract.methods.registerDevice(contract.registryAddress).estimateGas({from: this.state.accounts[0], value: 10000000000000000}, this.rc0)
 
-  }
-*/
-  registerContract = () => {
-    let deviceContract = new this.state.provider.eth.Contract(contract.abiArray, this.state.contract, { data: contract.bytecode });
-    deviceContract.methods.registerDevice(contract.registryAddress).estimateGas({from: this.state.accounts[0], value: 400000000000000000}, this.rc0)
-  }
+   registerContract = () => {
+     console.log("register contract with ", contract.registryAddress) 
+     let deviceContract = new this.state.provider.eth.Contract(contract.abiArray, this.state.contract, { data: contract.bytecode });
+     console.log(deviceContract)
+     console.log(deviceContract.methods)
+     deviceContract.methods.registerDevice(contract.registryAddress).estimateGas({from: this.state.accounts[0], value: 10000000000000000}, this.rc0)
+   }
+// // // // */
+  // registerContract = () => {
+  //  // let newContract = new this.state.provider.eth.Contract(deviceContract.abiArray, addr);
+  //   let deviceContract = new this.state.provider.eth.Contract(contract.abiArray, this.state.contract, { data: contract.bytecode });
+  //   deviceContract.methods.registerDevice(contract.registerDevice).estimateGas({from: this.state.accounts[0], value: 100000000000000000}, this.rc0)
+    
+  //   //  deviceContract.methods.registerDevice(contract.registryAddress).estimateGas({from: this.state.accounts[0], value: 100000000000000000}, this.rc0)
+  // }
 
   rc0 = (err, gasEstimate) => {
     console.log("gas estimate: ", gasEstimate)
@@ -162,9 +165,9 @@ class Wizard extends Component {
     console.log("Registering the device")
     deviceContract.methods.registerDevice(contract.registryAddress).send({
          from: account,
-         gas: this.state.gasLimit + 320000,
+         gas: this.state.gasLimit + 80000,
          gasPrice: this.state.gasPrice,
-         value:  40000000000000000,
+         value:  10000000000000000,
     }, function(error, transactionHash){
         self.setState({contractStatus: "Submitted contract with Transaction Hash: ", transactionHash})
        })
@@ -216,15 +219,15 @@ class Wizard extends Component {
     /* https://web3js.readthedocs.io/en/1.0/web3-eth-contract.html#contract-deploy */
     console.log("contract", deviceContract)
     console.log("gas price: ", this.state.gasPrice, " gas limit: ", this.state.gasLimit)
-    deviceContract.deploy({
-      data: contract.bytecode,
-      arguments: [
-        this.state.contractName,
-        this.state.contractLocation,
-        this.state.contractURL
-      ]}).send({
+    deviceContract.deploy().send({
+    //   data: contract.bytecode,
+    //   arguments: [
+    //     this.state.contractName,
+    //     this.state.contractLocation,
+    //     this.state.contractURL
+    //   ]}
          from: account,
-         gas: this.state.gasLimit + 320000,
+         gas: this.state.gasLimit + 80000,
          gasPrice: this.state.gasPrice,
        }, function(error, transactionHash){
         self.setState({contractStatus: "Submitted contract with Transaction Hash: ", transactionHash})
