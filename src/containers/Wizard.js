@@ -129,7 +129,7 @@ class Wizard extends Component {
      let deviceContract = new this.state.provider.eth.Contract(contract.abiArray, this.state.contract, { data: contract.bytecode });
      console.log(deviceContract)
      console.log(deviceContract.methods)
-     deviceContract.methods.registerDevice(contract.registryAddress).estimateGas({from: this.state.accounts[0], value: 10000000000000000}, this.rc0)
+     deviceContract.methods.registerDevice(contract.registryAddress).estimateGas({from: this.state.accounts[0], value: 1000000000000000}, this.rc0)
    }
 // // // // */
   // registerContract = () => {
@@ -167,7 +167,7 @@ class Wizard extends Component {
          from: account,
          gas: this.state.gasLimit + 80000,
          gasPrice: this.state.gasPrice,
-         value:  10000000000000000,
+         value:  1000000000000000,
     }, function(error, transactionHash){
         self.setState({contractStatus: "Submitted contract with Transaction Hash: ", transactionHash})
        })
@@ -219,13 +219,14 @@ class Wizard extends Component {
     /* https://web3js.readthedocs.io/en/1.0/web3-eth-contract.html#contract-deploy */
     console.log("contract", deviceContract)
     console.log("gas price: ", this.state.gasPrice, " gas limit: ", this.state.gasLimit)
-    deviceContract.deploy().send({
-    //   data: contract.bytecode,
-    //   arguments: [
-    //     this.state.contractName,
-    //     this.state.contractLocation,
-    //     this.state.contractURL
-    //   ]}
+    deviceContract.deploy({
+      data: contract.bytecode,
+      arguments: [
+        this.state.contractName,
+        this.state.contractLocation,
+        this.state.contractURL
+     ]
+    }).send({
          from: account,
          gas: this.state.gasLimit + 80000,
          gasPrice: this.state.gasPrice,
@@ -234,7 +235,7 @@ class Wizard extends Component {
        })
       .on('error', function(error) {
         console.error(error)
-        self.setState({contractStatus: "Error submitting contract: ", error})
+        self.setState({contractStatus: "Error submitting contract: " + error})
       })
       .on('transactionHash', function(transactionHash) {
         self.setState({contractStatus: "Successfully submitted transaction hash: " +  transactionHash})
