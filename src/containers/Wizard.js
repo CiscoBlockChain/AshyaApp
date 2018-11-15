@@ -8,6 +8,7 @@ import Wizard2 from '../components/Wizard2'
 import Wizard3 from '../components/Wizard3'
 import Wizard4 from '../components/Wizard4'
 import Main from '../components/Main'
+import Loading from '../components/Loading'
 import CError from '../components/CError'
 import * as contract from '../contract.js'
 import Web3 from 'web3';
@@ -31,6 +32,8 @@ class Wizard extends Component {
       provider: "",
       gasPrice: "",  // price of gas 
       gasLimit: "",  // amount of gas willing to pay
+      working: false,
+      workingMessage: "Loading!"
     }
     this.renderPage = this.renderPage.bind(this);
     this.handleChange = this.handleChange.bind(this);
@@ -125,11 +128,15 @@ class Wizard extends Component {
   // registers the contract with the Ashya Registry at Ashya.io
 
    registerContract = () => {
+     let t = this
+     t.setState({working: true})
+     t.setState({workingMessage: "Use Metamask to complete transaction"})
      console.log("register contract with ", contract.registryAddress) 
      let deviceContract = new this.state.provider.eth.Contract(contract.abiArray, this.state.contract, { data: contract.bytecode });
      console.log(deviceContract)
      console.log(deviceContract.methods)
      deviceContract.methods.registerDevice(contract.registryAddress).estimateGas({from: this.state.accounts[0], value: 1000000000000000}, this.rc0)
+     
    }
 // // // // */
   // registerContract = () => {
@@ -146,7 +153,9 @@ class Wizard extends Component {
       console.error("Got error with getting gas estimate")
       console.error(err);
       this.setState({merror: err})
+      this.setState({working: false})
     }else {
+      this.setState({workingMessage: "Gas estimate" + gasEstimate.toString()})
       console.log("Got gas Estimate: ", gasEstimate)
       this.setState({gasLimit: gasEstimate})
       this.state.provider.eth.getGasPrice(this.rc1)
@@ -157,6 +166,7 @@ class Wizard extends Component {
     this.setState({gasPrice: gasPrice});
     if (error) {
       console.error(error);
+      this.setState({working : false})
       return
     }
     let self = this
@@ -173,6 +183,7 @@ class Wizard extends Component {
        })
       .on('error', function(error) {
         console.error(error)
+        this.setState({working : false})
         self.setState({contractStatus: "Error submitting contract: ", error})
       })
       .on('transactionHash', function(transactionHash) {
@@ -190,6 +201,7 @@ class Wizard extends Component {
         console.log("Created New Contract Instance: ", newContractInstance.options.address);
         // store contract in Ashya Device. 
         self.props.updateContract(newContractInstance.options.address);
+        this.setState({working : false})
       })
   }
 
@@ -228,8 +240,8 @@ class Wizard extends Component {
      ]
     }).send({
          from: account,
-         gas: this.state.gasLimit + 80000,
-         gasPrice: this.state.gasPrice,
+         gas: parseInt(this.state.gasLimit,10) + 800000 ,
+         gasPrice: this.state.gasPrice.toString(),
        }, function(error, transactionHash){
         self.setState({contractStatus: "Submitted contract with Transaction Hash: ", transactionHash})
        })
@@ -281,8 +293,10 @@ class Wizard extends Component {
         <CError err={this.state.error}/>
       )
     }
-    return (
+    return(
       this.state.contract === "" ? 
+      <div>
+        <Loading working={this.state.working} workingMessage={this.state.workingMessage}/>
         <ReactCSSTransitionGroup
           transitionName={ this.state.pageForward ? "page" : "prev" }
           transitionEnterTimeout={500}
@@ -290,6 +304,7 @@ class Wizard extends Component {
         >
         {this.renderPage()}
         </ReactCSSTransitionGroup>
+        </div>
       :
         <Main address={this.state.contract} registerFunc={this.registerContract} deleteFunc={this.deleteContract}/> 
     )
