@@ -128,16 +128,22 @@ class Wizard extends Component {
   // registers the contract with the Ashya Registry at Ashya.io
   registerContract = () => {
     let t = this
-    console.log("registering")
     let account = t.state.accounts[0]
     t.setState({working: true})
     t.setState({workingMessage: "Use Metamask to complete transaction"})
-    let deviceContract = new t.state.provider.eth.Contract(contract.abiArray, t.state.contract, { data: contract.bytecode });
-    var eth = Web3.utils.toWei(".01", "ether")
+    let deviceContract = new this.state.provider.eth.Contract(contract.abiArray, this.state.contract);
+    var eth = Web3.utils.toWei(".019", "ether")
+    console.log(typeof(contract.registryAddress))
+    deviceContract.methods.addURL("https://benincosa.com").estimateGas({
+      from: account,
+      value: eth
+    })
+    /*
     deviceContract.methods.registerDevice(contract.registryAddress).estimateGas({
       from: account,
-      value: eth.toString()
+      value: eth.toString() 
     })
+    */
     // once we have the gas estimate get the gas price
     .then(function(gasEstimate) {
       t.setState({workingMessage: "Gas estimate" + gasEstimate.toString()})
@@ -146,15 +152,14 @@ class Wizard extends Component {
       .then(function(gasPrice) {
         t.setState({gasPrice: gasPrice});
         // can we get rid of this line? 
-        let deviceContract = new t.state.provider.eth.Contract(contract.abiArray, t.state.contract, { data: contract.bytecode });
         deviceContract.methods.registerDevice(contract.registryAddress).send({
           from: account,
-          gas: t.state.gasLimit + 80000,
+          gas: t.state.gasLimit + 800000,
           gasPrice: t.state.gasPrice,
-          value:  1000000000000000,
+          value:  eth,
         }, function(error, transactionHash){
             t.setState({contractStatus: "Submitted contract with Transaction Hash: ", transactionHash})
-         })
+        })
         .on('error', function(error) {
           console.error(error)
           t.setState({working : false})
