@@ -33,7 +33,7 @@ class Wizard extends Component {
       gasPrice: "",  // price of gas 
       gasLimit: "",  // amount of gas willing to pay
       working: false,
-      workingMessage: "Loading!"
+      workingMessage: "..."
     }
     this.renderPage = this.renderPage.bind(this);
     this.handleChange = this.handleChange.bind(this);
@@ -205,68 +205,74 @@ class Wizard extends Component {
       })
   }
 
+  /* Create the contract */
   createContract = () => {
-    // estimate gas
-    this.state.provider.eth.estimateGas({ data: contract.bytecode }, this.cc0);
+    let t = this
+    /* show the user that we are working! */
+    t.setState({workingMessage: "Estimating Contract cost..."})
+    t.setState({working : true})
+
+    /* figure out how much gas the code will take to store in Ethereum */
+    t.state.provider.eth.estimateGas({ data: contract.bytecode }
+    ).then(function(gasEstimate) {
+      t.setState({gasLimit: gasEstimate })
+      // get the price of the gas
+      t.setState({workingMessage: "Get Gas Price..."})
+      t.state.provider.eth.getGasPrice()
+      .then(function(gasPrice) {
+        t.setState({gasPrice: gasPrice});
+        let account = t.state.accounts[0]
+        // create the contract
+        t.setState({workingMessage: "Waiting for you to confirm Metamask transaction."})
+        let deviceContract = new t.state.provider.eth.Contract(contract.abiArray, null, { data: contract.bytecode });
+        console.log("gas price: ", t.state.gasPrice, " gas limit: ", t.state.gasLimit)
+        // deploy the contract
+        deviceContract.deploy({
+          data: contract.bytecode,
+          arguments: [
+            t.state.contractName,
+            t.state.contractLocation,
+            t.state.contractURL
+          ]
+        }).send({
+             from: account,
+             gas: parseInt(t.state.gasLimit,10) + 800000 ,
+             gasPrice: t.state.gasPrice.toString(),
+        }, function(error, transactionHash){
+            t.setState({contractStatus: "Submitted contract with Transaction Hash: ", transactionHash})
+            t.setState({workingMessage: "Contract Transaction Hash: " + transactionHash})
+        })
+        .on('error', function(error) {
+            console.error(error)
+            t.setState({contractStatus:  "Metamask transaction failed."})
+            t.setState({working : false})
+        })
+        .on('transactionHash', function(transactionHash) {
+            t.setState({contractStatus: "Successfully submitted transaction hash: " +  transactionHash})
+            t.setState({workingMessage: "Contract Transaction Hash: " + transactionHash})
+        })
+        .on('receipt', function(receipt) {
+            t.setState({contractStatus: "Contract Address: " + receipt.contractAddress})
+            console.log("got receipt! address: ", receipt.contractAddress)
+            t.setState({workingMessage: "Transaction Receipt: "+ receipt.contractAddress})
+        })
+        .on('confirmation', function(confirmationNumber, receipt) {
+            t.setState({contractStatus: "Contract Address: "+ receipt.contractAddress + " Confirmation: " + confirmationNumber})
+            t.setState({workingMessage: "Contract Address: "+ receipt.contractAddress + " Confirmation: " + confirmationNumber})
+        })
+        .then(function(newContractInstance){
+            console.log("Created New Contract Instance: ", newContractInstance.options.address);
+            // store contract in Ashya Device. 
+            t.props.updateContract(newContractInstance.options.address);
+            t.setState({working : false})
+        })
+      })
+    }) 
+    .catch(function(error) {
+      console.error(error)
+      t.setState({working : false})
+    })
   }
-
-  cc0 = (error, gasEstimate) => {
-    this.setState({gasLimit: gasEstimate })
-    this.state.provider.eth.getGasPrice(this.cc1)
-  } 
-
-  cc1 = (error, gasPrice) => {
-    this.setState({gasPrice: gasPrice});
-    
-    if (error) {
-      console.error(error);
-      return;
-    }
-    // get the account
-    let account = this.state.accounts[0]
-    /* https://web3js.readthedocs.io/en/1.0/web3-eth-contract.html#new-contract */
-    let self = this 
-    let deviceContract = new this.state.provider.eth.Contract(contract.abiArray, null, { data: contract.bytecode });
-    //var deviceContract = this.state.provider.eth.Contract(abiArray, null, );
-    /* https://web3js.readthedocs.io/en/1.0/web3-eth-contract.html#contract-deploy */
-    console.log("contract", deviceContract)
-    console.log("gas price: ", this.state.gasPrice, " gas limit: ", this.state.gasLimit)
-    deviceContract.deploy({
-      data: contract.bytecode,
-      arguments: [
-        this.state.contractName,
-        this.state.contractLocation,
-        this.state.contractURL
-     ]
-    }).send({
-         from: account,
-         gas: parseInt(this.state.gasLimit,10) + 800000 ,
-         gasPrice: this.state.gasPrice.toString(),
-       }, function(error, transactionHash){
-        self.setState({contractStatus: "Submitted contract with Transaction Hash: ", transactionHash})
-       })
-      .on('error', function(error) {
-        console.error(error)
-        self.setState({contractStatus: "Error submitting contract: " + error})
-      })
-      .on('transactionHash', function(transactionHash) {
-        self.setState({contractStatus: "Successfully submitted transaction hash: " +  transactionHash})
-      })
-      .on('receipt', function(receipt) {
-        self.setState({contractStatus: "Contract Address: " + receipt.contractAddress})
-        console.log("got receipt! address: ", receipt.contractAddress)
-      })
-      .on('confirmation', function(confirmationNumber, receipt) {
-        self.setState({contractStatus: "Contract Address: "+ receipt.contractAddress + " Confirmation: " + confirmationNumber})
-        //console.log("got confirmation: ", confirmationNumber)
-      })
-      .then(function(newContractInstance){
-        console.log("Created New Contract Instance: ", newContractInstance.options.address);
-        // store contract in Ashya Device. 
-        self.props.updateContract(newContractInstance.options.address);
-      })
-
-  } 
 
 
   deleteContract = () => {

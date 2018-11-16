@@ -118,4 +118,19 @@ a .fa {
   text-align: center;
 }
 
+.cover {
+  /*opacity: 0.5; */
+  /*background: #000; */
+  background-color: rgba(0,0,0,0.5);
+  width: 100%;
+  height: 100%;
+  z-index: 10 !important;
+  top: 0;
+  left: 0;
+  position: fixed
+}
 
+.loading {
+  text-align: center;
+  margin-top: 5em;
+}
