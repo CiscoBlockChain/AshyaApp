@@ -132,18 +132,12 @@ class Wizard extends Component {
     t.setState({working: true})
     t.setState({workingMessage: "Use Metamask to complete transaction"})
     let deviceContract = new this.state.provider.eth.Contract(contract.abiArray, this.state.contract);
-    var eth = Web3.utils.toWei(".019", "ether")
+    var eth = Web3.utils.toWei("0.040")
     console.log(typeof(contract.registryAddress))
-    deviceContract.methods.addURL("https://benincosa.com").estimateGas({
-      from: account,
-      value: eth
-    })
-    /*
     deviceContract.methods.registerDevice(contract.registryAddress).estimateGas({
       from: account,
       value: eth.toString() 
     })
-    */
     // once we have the gas estimate get the gas price
     .then(function(gasEstimate) {
       t.setState({workingMessage: "Gas estimate" + gasEstimate.toString()})
@@ -151,7 +145,7 @@ class Wizard extends Component {
       t.state.provider.eth.getGasPrice()
       .then(function(gasPrice) {
         t.setState({gasPrice: gasPrice});
-        // can we get rid of this line? 
+        t.setState({workingMessage: "Registering contract"})
         deviceContract.methods.registerDevice(contract.registryAddress).send({
           from: account,
           gas: t.state.gasLimit + 800000,
@@ -171,18 +165,12 @@ class Wizard extends Component {
         .on('receipt', function(receipt) {
           t.setState({contractStatus: "Contract Address: " + receipt.contractAddress})
           console.log("got receipt! address: ", receipt.contractAddress)
+          t.setState({working : false})
         })
         .on('confirmation', function(confirmationNumber, receipt) {
           t.setState({contractStatus: "Contract Address: "+ receipt.contractAddress + " Confirmation: " + confirmationNumber})
-          //console.log("got confirmation: ", confirmationNumber)
-        })
-        .then(function(newContractInstance){
-          console.log("Created New Contract Instance: ", newContractInstance.options.address);
-          // store contract in Ashya Device. 
-          t.props.updateContract(newContractInstance.options.address);
           t.setState({working : false})
         })
-
       })
     })
     .catch(function(error) {
