@@ -133,10 +133,9 @@ class Wizard extends Component {
     t.setState({workingMessage: "Use Metamask to complete transaction"})
     let deviceContract = new this.state.provider.eth.Contract(contract.abiArray, this.state.contract);
     var eth = Web3.utils.toWei("0.040")
-    console.log(typeof(contract.registryAddress))
     deviceContract.methods.registerDevice(contract.registryAddress).estimateGas({
       from: account,
-      value: eth.toString() 
+      value: eth
     })
     // once we have the gas estimate get the gas price
     .then(function(gasEstimate) {
