@@ -1,6 +1,6 @@
 // The ABI of the contract we will be creating. 
 // Two variables are needed, each from the same contract.  
-export const registryAddress = "0x7cc2027ea1dc871a63525ab5cbd13df91290518f"
+export const registryAddress = "0xc63e366814b73ccf2eefe7ba2f4d50fffda0c586"
 
 export const abiArray = [
     {
